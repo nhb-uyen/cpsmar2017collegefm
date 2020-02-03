@@ -1,0 +1,32 @@
+*Dropping observations for people age < 18 and metropolitan status not identified
+drop if a_age < 18
+
+*Creating new variable indicating attendance at college or not
+gen college=0 
+
+*Finding out the numeric variable given to each label for a_hga - Educational attainment
+tab a_hga, nolabel
+*Fill in new variable with 1 if the person attended college - uses numeric values from a_hga
+replace college=1 if inlist(a_hga, 40, 41, 42, 43, 44, 45, 46)
+
+*Label it college or no college by first creating a value label
+label define college_label 0 "No College" 1 "College" 
+* then associating the value label with the college variable
+label values college college_label
+
+*DESCRIPTIVE STATISTICS - TABLES AND CHARTS
+*Table showing college attendance by gender and % of attendance of each group
+tab college a_sex, col
+
+*Probability illustration with pie charts
+* I was unable to find the code to add title to the graph so I used the Graph Editor tool in Stata to complete that step
+graph pie a_sex if a_sex==1, over(college) plabel(_all percent, size(*1.5) color(white)) 
+graph pie a_sex if a_sex==2, over(college) plabel(_all percent, size(*1.5) color(white)) 
+	
+*Joint Probability table for the sample
+tab college a_sex, cell
+
+*Rejection region
+twoway (function y = tden(135750,x), range(-1.96 1.96) color(red) recast(area)) 
+	(function y = tden(135750,x),range(-5 5)), legend(off) plotregion(margin(zero)) 
+	title("Rejection region") ytitle("f(t)") xtitle("t") xlabel(-5 -1.96 0 1.96 5) name(twotail, replace) 
